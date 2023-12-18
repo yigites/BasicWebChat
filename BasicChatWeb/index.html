@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="assets/Logo.png" type="image/x-icon" />
+    <link rel="stylesheet" href="style.css">
+    <title>Chat App</title>
+</head>
+
+<body>
+    <div id="chat-box"></div>
+    <input type="text" id="message-input" placeholder="Type your message">
+    <button onclick="resetMessages()">Reset Messages</button>
+    <button onclick="sendMessage()">Send</button>
+
+    <script>
+        async function sendMessage() {
+            const messageInput = document.getElementById("message-input");
+            const message = messageInput.value;
+
+            if (message.trim() !== "") {
+                await saveMessage(message);
+                displayMessages();
+                messageInput.value = "";
+            }
+        }
+
+        async function saveMessage(message) {
+            const existingMessages = await getMessages();
+            existingMessages.push(message);
+            localStorage.setItem("chatMessages", JSON.stringify(existingMessages));
+        }
+
+        async function getMessages() {
+            try {
+                const existingMessages = localStorage.getItem("chatMessages");
+                console.log("existingMessages:", existingMessages);
+
+                return existingMessages ? JSON.parse(existingMessages) : [];
+            } catch (error) {
+                console.error("Error retrieving messages from localStorage:", error);
+                throw error;
+            }
+        }
+
+        async function displayMessages() {
+            const chatBox = document.getElementById("chat-box");
+            chatBox.innerHTML = "";
+
+            try {
+                const messages = await getMessages();
+                console.log("messages:", messages);
+
+                if (Array.isArray(messages)) {
+                    messages.forEach(message => {
+                        const messageElement = document.createElement("div");
+                        messageElement.textContent = message;
+                        chatBox.appendChild(messageElement);
+                    });
+                } else {
+                    console.error("Stored messages are not an array.");
+                }
+            } catch (error) {
+                console.error("An error occurred while retrieving messages:", error);
+            }
+        }
+
+        function resetMessages() {
+            localStorage.removeItem("chatMessages");
+            displayMessages();
+        }
+
+        document.addEventListener("DOMContentLoaded", () => {
+            displayMessages();
+        });
+    </script>
+</body>
+
+</html>
